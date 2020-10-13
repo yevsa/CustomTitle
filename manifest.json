@@ -1,0 +1,21 @@
+{
+  "name": "Tab Custom Multiname",
+  "version": "1.0",
+  "description": "Allows to have your prefererred tab name",
+  "manifest_version": 2,
+  "background": {
+    "scripts": [
+      "hot-reload.js",
+      "background.js",
+      "install.js",
+      "classes.js"
+    ],
+    "persistent": false
+  },
+  "permissions": [
+    "storage",
+    "tabs",
+    "http://*/",
+    "https://*/"
+  ]
+}
