@@ -5,56 +5,64 @@ chrome.runtime.onInstalled.addListener(
         debug: true,
         reset: true,
         suppress: true,
-        ruleset: {
-          'example.com': {
+        ruleset: [
+          {
+            name: 'example.com',
             enabled: true,
             text: 'Custom example.com title',
-            params: {
-              'a': {
+            params: [
+              {
+                name: 'a',
                 enabled: true,
                 priority: 1,
                 pair: true,
                 text: 'Custom parameter "a" text',
-                values: {
-                  '1': {
+                values: [
+                  {
+                    name: '1',
                     enabled: true,
                     text: 'Custom a=1 text',
                   }
-                }
+                ]
               },
-            }
+            ]
           },
-          'localhost': {
+          {
+            name: 'localhost',
             enabled: true,
             text: 'hi',
-            params: {
-              'a': {
+            params: [
+              {
+                name: 'a',
                 enabled: true,
                 priority: 1,
                 pair: true,
                 text: 'Custom parameter "a" text',
-                values: {
-                  '1': {
+                values: [
+                  {
+                    name: '1',
                     enabled: true,
                     text: '=^_^=',
                   },
-                },
+                ],
               },
-              'b': {
+              {
+                name: 'b',
                 enabled: true,
                 priority: 2,
                 pair: true,
                 text: 'Custom parameter "a" text',
-                values: {
-                  '2': {
+                values: [
+                  {
+                    name: '2',
                     enabled: true,
                     text: 'xD',
                   },
-                },
+                ],
               },
-            }
+            ]
           },
-        },
+        ],
         separator: {
           enabled: true,
           value: ' | ',

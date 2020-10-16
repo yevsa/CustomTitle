@@ -9,7 +9,7 @@ chrome.tabs.onUpdated.addListener(
       const url = new URL(tab.url);
       const { hostname } = url;
   
-      const tabRuleset = options.ruleset?.[hostname];
+      const tabRuleset = options.ruleset.find(set => set.name === hostname);
   
       if (tabRuleset) {
         tabRuleset.params = Object.fromEntries(
@@ -28,6 +28,8 @@ chrome.tabs.onUpdated.addListener(
         ----- ${hostname} -----
         `);
     
+          
+          
           // alert(JSON.stringify(options, null, 2));
         }
         
