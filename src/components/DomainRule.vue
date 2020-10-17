@@ -3,6 +3,9 @@
     <div class="head">
       <button class="open" @click="opened = !opened">{{ openedText }}</button>
       <p class="title">{{ data.name }}</p>
+      <label>
+        <input type="text" v-model="localData.text">
+      </label>
       <button class="delete" @click="$emit('remove', data.name)">🞨</button>
     </div>
     <DomainParameter

@@ -2,9 +2,9 @@
   <div>
     <div class="addForm">
       <label>
-        <input type="text" placeholder="example.com">
+        <input v-model="newDomain" type="text" placeholder="example.com">
       </label>
-      <button>+ Add</button>
+      <button @click="addDomain">+ Add</button>
     </div>
     <div class="rules" v-if="activeRules.length">
       <DomainRule
@@ -32,8 +32,9 @@
     components: { DomainRule },
     data() {
       return {
-        mock: true,
+        mock: 0,
         options: {},
+        newDomain: '',
       }
     },
     computed: {
@@ -54,7 +55,42 @@
       setStorageData(data) {
         if (!this.mock) {
           return new Promise(resolve => {
-            chrome.storage.sync.set(data, () => resolve())
+            chrome.storage.sync.set(data, () => {
+              if (this.options.debug) {
+                console.log('storage.set', JSON.stringify(data, null, 2));
+              }
+
+              resolve()
+            });
+          });
+        } else {
+          console.debug('setStorageData', JSON.stringify(data, null, 2));
+        }
+      },
+      addDomain() {
+        const ruleset = this.options.ruleset;
+
+        if (!ruleset.find(el => el.name === this.newDomain)) {
+          ruleset.push({
+            name: this.newDomain,
+            enabled: true,
+            text: '',
+            params: [
+              {
+                name: '',
+                enabled: true,
+                priority: 1,
+                pair: true,
+                text: '',
+                values: [
+                  {
+                    name: '',
+                    enabled: true,
+                    text: '',
+                  }
+                ]
+              },
+            ]
           });
         }
       },
@@ -66,10 +102,33 @@
       },
     },
     watch: {
-      ruleset: {
+      'options.ruleset': {
         handler(val) {
           this.options.ruleset = val;
-          this.setStorageData({ options: this.options });
+
+          console.log('------');
+          console.log('invalid ruleset', JSON.stringify(val, null, 2));
+
+          const validRuleset = JSON.parse(JSON.stringify(this.options.ruleset));
+          validRuleset
+            .filter(domain => {
+              domain.params = domain.params.filter(param => {
+                param.values = param.values.filter(value => {
+                  return value.name.length
+                    && value.text.length;
+                });
+
+                return param.name.length
+                  && (param.pair || param.text.length)
+                  && param.values.length;
+              });
+
+              return domain.name.length
+                && domain.text.length
+                && domain.params.length;
+            });
+
+          this.setStorageData({ options: { ...this.options, ruleset: validRuleset } });
         },
         deep: true,
       }
