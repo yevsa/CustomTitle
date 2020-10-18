@@ -44,13 +44,14 @@
       createParam() {
         let priority;
 
-        if (this.localData.params > 1) {
+        if (this.localData.params.length > 1) {
           priority = this.localData.params.reduce((prev, curr) => {
-            prev.priority > curr.priority ? prev.priority : curr.priority
+            return prev.priority > curr.priority ? prev.priority : curr.priority
           }) + 1;
         } else {
           priority = this.localData.params[0].priority + 1;
         }
+        console.log(priority);
 
         this.localData.params.push({
           name: '',

@@ -64,7 +64,7 @@
             });
           });
         } else {
-          console.debug('setStorageData', JSON.stringify(data, null, 2));
+          // console.debug('setStorageData', JSON.stringify(data, null, 2));
         }
       },
       addDomain() {
@@ -106,8 +106,8 @@
         handler(val) {
           this.options.ruleset = val;
 
-          console.log('------');
-          console.log('invalid ruleset', JSON.stringify(val, null, 2));
+          // console.log('------');
+          // console.log('invalid ruleset', JSON.stringify(val, null, 2));
 
           const validRuleset = JSON.parse(JSON.stringify(this.options.ruleset));
           validRuleset
