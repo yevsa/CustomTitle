@@ -23,7 +23,7 @@
       <button
         class="remove"
         :disabled="stub"
-        @click="$emit('remove', data.name)"
+        @click="$emit('remove', data.id)"
       >
         🞨
       </button>
@@ -50,14 +50,14 @@
       };
     },
     watch: {
-      data: {
+      data:{
         handler(val) {
           this.localData = val;
         },
         deep: true,
         immediate: true,
       },
-      localData: {
+      localData:{
         handler(val) {
           this.$emit('update', val);
         },

@@ -3,15 +3,23 @@ chrome.runtime.onInstalled.addListener(
     const defaultData = {
       options: {
         debug: true,
-        reset: true,
-        suppress: true,
+        reset: false,
+        preferences: {
+          suppress: true,
+        },
+        separator: {
+          enabled: true,
+          value: ' | ',
+        },
         ruleset: [
           {
+            id: 1,
             name: 'example.com',
             enabled: true,
             text: 'Custom example.com title',
             params: [
               {
+                id: 1,
                 name: 'a',
                 enabled: true,
                 priority: 1,
@@ -19,6 +27,7 @@ chrome.runtime.onInstalled.addListener(
                 text: 'Custom parameter "a" text',
                 values: [
                   {
+                    id: 1,
                     name: '1',
                     enabled: true,
                     text: 'Custom a=1 text',
@@ -28,11 +37,13 @@ chrome.runtime.onInstalled.addListener(
             ]
           },
           {
+            id: 2,
             name: 'localhost',
             enabled: true,
             text: 'hi',
             params: [
               {
+                id: 1,
                 name: 'a',
                 enabled: true,
                 priority: 1,
@@ -40,6 +51,7 @@ chrome.runtime.onInstalled.addListener(
                 text: 'Custom parameter "a" text',
                 values: [
                   {
+                    id: 1,
                     name: '1',
                     enabled: true,
                     text: '=^_^=',
@@ -47,6 +59,7 @@ chrome.runtime.onInstalled.addListener(
                 ],
               },
               {
+                id: 2,
                 name: 'b',
                 enabled: true,
                 priority: 2,
@@ -54,6 +67,7 @@ chrome.runtime.onInstalled.addListener(
                 text: 'Custom parameter "a" text',
                 values: [
                   {
+                    id: 1,
                     name: '2',
                     enabled: true,
                     text: 'xD',
@@ -63,10 +77,6 @@ chrome.runtime.onInstalled.addListener(
             ]
           },
         ],
-        separator: {
-          enabled: true,
-          value: ' | ',
-        },
       },
     };
     

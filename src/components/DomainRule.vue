@@ -1,24 +1,41 @@
 <template>
   <div class="domain">
     <div class="head">
-      <button class="open" @click="opened = !opened">{{ openedText }}</button>
+      <button
+        class="open"
+        @click="opened = !opened"
+      >
+        {{ openedText }}
+      </button>
       <p class="title">{{ data.name }}</p>
+
+      <div class="right">
+        <button @click="$emit('duplicate')">
+          📋
+        </button>
+        <button @click="$emit('remove', data.id)">
+          🞨
+        </button>
+      </div>
+    </div>
+    <div class="body" v-if="opened">
       <label>
+        <span class="title">Value</span>
         <input type="text" v-model="localData.text">
       </label>
-      <button class="delete" @click="$emit('remove', data.name)">🞨</button>
+      <hr>
+      <p class="title">Parameters</p>
+      <DomainParameter
+        v-for="(param, key) in activeParams"
+        :key="key"
+        :data="param"
+        @create="createParam"
+        @update="updateParam"
+        @remove="removeParam"
+        @increasePriority="increaseParamPriority"
+        @decreasePriority="decreaseParamPriority"
+      />
     </div>
-    <DomainParameter
-      v-for="(param, key) in activeParams"
-      :key="key"
-      :data="param"
-      :opened="opened"
-      @create="createParam"
-      @update="updateParam"
-      @remove="removeParam"
-      @increasePriority="increaseParamPriority"
-      @decreasePriority="decreaseParamPriority"
-    />
   </div>
 </template>
 
@@ -36,48 +53,48 @@
     },
     data() {
       return {
-        opened: true,
+        opened: false,
         localData: {},
-      }
+      };
     },
     methods: {
       createParam() {
         let priority;
+        const params = this.localData.params;
 
-        if (this.localData.params.length > 1) {
-          priority = this.localData.params.reduce((prev, curr) => {
-            return prev.priority > curr.priority ? prev.priority : curr.priority
+        if (params.length > 1) {
+          priority = params.reduce((prev, curr) => {
+            return prev.priority > curr.priority ? prev.priority : curr.priority;
           }) + 1;
         } else {
-          priority = this.localData.params[0].priority + 1;
+          priority = params[0].priority + 1;
         }
-        console.log(priority);
 
-        this.localData.params.push({
+        params.push({
+          id: params.map(param => param.id).sort().slice(-1)[0] + 1,
           name: '',
           enabled: true,
           priority,
           pair: true,
           text: '',
-          values: [
-            {
-              name: '',
-              enabled: true,
-              text: '',
-            },
-          ],
+          values: [{
+            id: 1,
+            name: '',
+            enabled: true,
+            text: '',
+          }],
         });
       },
       updateParam(val) {
-        this.localData.params.splice(this.localData.params.findIndex(el => el.name === val.name), 1, val);
+        this.localData.params.splice(this.localData.params.findIndex(el => el.id === val.id), 1, val);
       },
-      removeParam(name) {
+      removeParam(id) {
         if (this.localData.params.length > 1) {
-          this.localData.params.splice(this.localData.params.findIndex(el => el.name === name), 1);
+          this.localData.params.splice(this.localData.params.findIndex(el => el.id === id), 1);
         }
       },
-      increaseParamPriority(name) {
-        const param = this.localData.params.find(el => el.name === name);
+      increaseParamPriority(id) {
+        const param = this.localData.params.find(el => el.id === id);
         const nextPriorityParam = this.localData.params.find(el => {
           return el.priority === param.priority - 1;
         });
@@ -87,8 +104,8 @@
           nextPriorityParam.priority++;
         }
       },
-      decreaseParamPriority(name) {
-        const param = this.localData.params.find(el => el.name === name);
+      decreaseParamPriority(id) {
+        const param = this.localData.params.find(el => el.id === id);
         const prevPriorityParam = this.localData.params.find(el => {
           return el.priority === param.priority + 1;
         });
@@ -98,21 +115,16 @@
           prevPriorityParam.priority--;
         }
       },
-      updateDomain() {
-        this.$emit('update', this.localData);
-      },
     },
     computed: {
       activeParams() {
-        // console.log(JSON.stringify(this.data, null, 2));
-        // console.log(Array.isArray(this.data.params))
         return this.data.params
           .filter(el => el.enabled)
           .sort((a, b) => a.priority - b.priority);
       },
       openedText() {
         return this.opened ? '-' : '+';
-      }
+      },
     },
     watch: {
       data: {
@@ -133,40 +145,51 @@
 </script>
 
 <style lang="scss" scoped>
+  hr{
+    margin: .5rem 0;
+  }
+
   .domain {
     min-width: 500px;
     width: 100%;
+    background-color: #fff;
+    border: 1px solid black;
+    border-radius: 3px;
+    padding: .7rem;
+
+    &:not(:last-child) {
+      margin-bottom: .5rem;
+    }
 
     .head {
       display: flex;
       align-items: center;
 
-      border: 1px solid black;
-      border-radius: 3px;
-      background-color: #fff;
-
-      padding: .5rem;
-
       &:not(:last-child) {
         margin-bottom: 1rem;
       }
+
+      > .title {
+        margin: 0 1rem;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
     }
 
-    &:not(:last-child) {
-      margin-bottom: .5rem;
+    .body {
+      span.title {
+        margin-right: .4rem;
+      }
+      > .title {
+        margin-bottom: .5rem;
+      }
     }
   }
 
-  .title {
-    margin: 0 1rem;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
-  .delete {
+  .right {
+    display: flex;
     margin-left: auto;
-    justify-self: flex-end;
   }
 
   button {

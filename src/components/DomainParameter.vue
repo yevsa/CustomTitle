@@ -1,5 +1,5 @@
 <template>
-  <div v-if="opened" class="parameter">
+  <div class="parameter">
     <label>
       <button
         class="addParameter"
@@ -28,19 +28,19 @@
       <button
         class="sort"
         :disabled="stub"
-        @click="$emit('increasePriority', data.name)"
+        @click="$emit('increasePriority', data.id)"
       >🡑
       </button>
       <button
         class="sort"
         :disabled="stub"
-        @click="$emit('decreasePriority', data.name)"
+        @click="$emit('decreasePriority', data.id)"
       >🡓
       </button>
       <button
         class="remove"
         :disabled="stub"
-        @click="$emit('remove', data.name)"
+        @click="$emit('remove', data.id)"
       >🞨
       </button>
     </div>
@@ -58,10 +58,6 @@
         type: Object,
         default: () => {},
       },
-      opened: {
-        type: Boolean,
-        default: false,
-      },
       stub: {
         type: Boolean,
         default: false,
@@ -74,18 +70,19 @@
     },
     methods: {
       updateValue(val) {
-        this.localData.values.splice(this.localData.values.findIndex(el => el.name === val.name), 1, val);
+        Object.assign(this.localData.values.find(el => el.id === val.id), val);
       },
       createValue() {
         this.localData.values.push({
+          id: this.localData.values.map(value => value.id).sort().slice(-1)[0] + 1,
           name: '',
           enabled: true,
           text: '',
-        })
+        });
       },
-      removeValue(name) {
+      removeValue(id) {
         if (this.localData.values.length > 1) {
-            this.localData.values.splice(this.localData.values.findIndex(el => el.name === name), 1);
+          this.localData.values.splice(this.localData.values.findIndex(el => el.id === id), 1);
         }
       },
     },
