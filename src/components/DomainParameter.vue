@@ -1,48 +1,54 @@
 <template>
   <div class="parameter">
-    <label>
+    <div class="head">
       <button
         class="addParameter"
         :disabled="stub"
         @click="$emit('create')"
       >+
       </button>
-      <input
-        type="text"
-        placeholder=""
-        :disabled="stub"
-        v-model="localData.name"
-      >
-    </label>
-    <div class="parts">
-      <ParameterValue
-        v-for="value in localData.values"
-        :data="value"
-        :stub="stub"
-        @update="updateValue"
-        @create="createValue"
-        @remove="removeValue"
-      />
+      <label>
+        <span>Name:</span>
+        <input
+          type="text"
+          placeholder=""
+          :disabled="stub"
+          v-model="localData.name"
+          :class="{ invalid: !localData.name.length }"
+        >
+      </label>
+      <div class="controls">
+        <button
+          class="sort"
+          :disabled="stub"
+          @click="$emit('increasePriority', data.id)"
+        >🡑
+        </button>
+        <button
+          class="sort"
+          :disabled="stub"
+          @click="$emit('decreasePriority', data.id)"
+        >🡓
+        </button>
+        <button
+          class="remove"
+          :disabled="stub"
+          @click="$emit('remove', data.id)"
+        >🞨
+        </button>
+      </div>
     </div>
-    <div class="controls">
-      <button
-        class="sort"
-        :disabled="stub"
-        @click="$emit('increasePriority', data.id)"
-      >🡑
-      </button>
-      <button
-        class="sort"
-        :disabled="stub"
-        @click="$emit('decreasePriority', data.id)"
-      >🡓
-      </button>
-      <button
-        class="remove"
-        :disabled="stub"
-        @click="$emit('remove', data.id)"
-      >🞨
-      </button>
+    <div class="body">
+      <div class="parts">
+        <ParameterValue
+          v-for="value in localData.values"
+          :data="value"
+          :stub="stub"
+          @update="updateValue"
+          @create="createValue"
+          @remove="removeValue"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -107,19 +113,39 @@
 <style lang="scss" scoped>
   .parameter {
     display: flex;
+    flex-wrap: wrap;
 
-    .controls {
-      margin-left: auto;
-      margin-right: .2rem;
+    .head {
+      display: flex;
+      width: 100%;
 
-      button {
-        width: 34px;
+      label {
+        span {
+          margin: 0 .6rem;
+        }
+      }
 
-        &:not(:last-child) {
-          margin-right: .2rem;
+      .controls {
+        margin-left: auto;
+        margin-right: .2rem;
+
+        button {
+          width: 34px;
+
+          &:not(:last-child) {
+            margin-right: .2rem;
+          }
         }
       }
     }
+
+    .body {
+      display: flex;
+      flex-direction: column;
+
+
+    }
+
 
     &:not(:last-child) {
       margin-bottom: .5rem;

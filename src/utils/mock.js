@@ -1,8 +1,15 @@
 export const mock = {
-  options: {
+  settings: {
     debug: true,
-    reset: true,
-    suppress: true,
+    reset: false,
+    options: {
+      suppress: true,
+      caseSensitive: true,
+    },
+    separator: {
+      enabled: true,
+      value: ' | ',
+    },
     ruleset: [
       {
         id: 1,
@@ -69,9 +76,5 @@ export const mock = {
         ]
       },
     ],
-    separator: {
-      enabled: true,
-      value: ' | ',
-    },
   },
 };

@@ -1,11 +1,12 @@
 chrome.runtime.onInstalled.addListener(
   async () => {
     const defaultData = {
-      options: {
+      settings: {
         debug: true,
         reset: false,
-        preferences: {
+        options: {
           suppress: true,
+          caseSensitive: true,
         },
         separator: {
           enabled: true,
@@ -80,12 +81,12 @@ chrome.runtime.onInstalled.addListener(
       },
     };
     
-    const options = await new Promise(resolve => {
-      chrome.storage.sync.get('options', data => resolve(data.options))
+    const settings = await new Promise(resolve => {
+      chrome.storage.sync.get('settings', data => resolve(data.settings))
     });
     
     if (
-      !options
-      || options.reset
+      !settings
+      || settings.reset
     ) chrome.storage.sync.set(defaultData);
   });

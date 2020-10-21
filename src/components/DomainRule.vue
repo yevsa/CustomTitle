@@ -20,8 +20,12 @@
     </div>
     <div class="body" v-if="opened">
       <label>
-        <span class="title">Value</span>
-        <input type="text" v-model="localData.text">
+        <span class="title">Domain text:</span>
+        <input
+          type="text"
+          v-model="localData.text"
+          :class="{ invalid: !localData.text.length }"
+        >
       </label>
       <hr>
       <p class="title">Parameters</p>
@@ -58,6 +62,12 @@
       };
     },
     methods: {
+      openTab() {
+        this.opened = true;
+      },
+      closeTab() {
+        this.opened = false;
+      },
       createParam() {
         let priority;
         const params = this.localData.params;
@@ -179,7 +189,7 @@
 
     .body {
       span.title {
-        margin-right: .4rem;
+        margin-right: .6rem;
       }
       > .title {
         margin-bottom: .5rem;
@@ -190,6 +200,10 @@
   .right {
     display: flex;
     margin-left: auto;
+
+    button:not(:last-child) {
+      margin-right: .4rem;
+    }
   }
 
   button {

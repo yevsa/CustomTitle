@@ -1,4 +1,4 @@
 module.exports = {
-  outputDir: 'dist/options',
-  publicPath: '/options/'
+  outputDir: 'dist/settings',
+  publicPath: '/settings/'
 }
