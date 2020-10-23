@@ -81,7 +81,7 @@
         }
 
         params.push({
-          id: params.map(param => param.id).sort().slice(-1)[0] + 1,
+          id: params.map(param => param.id).sort((a, b) => a.id - b.id).slice(-1)[0] + 1,
           name: '',
           enabled: true,
           priority,

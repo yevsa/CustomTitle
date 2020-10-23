@@ -113,7 +113,7 @@
     },
     methods: {
       generateNewId(array) {
-        return array.map(el => el.id).sort().slice(-1)[0] + 1;
+        return array.map(el => el.id).sort((a, b) => a.id - b.id).slice(-1)[0] + 1;
       },
       openAllTabs() {
         this.$refs.domains?.forEach(domain => domain.openTab());

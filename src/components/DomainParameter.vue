@@ -80,7 +80,7 @@
       },
       createValue() {
         this.localData.values.push({
-          id: this.localData.values.map(value => value.id).sort().slice(-1)[0] + 1,
+          id: this.localData.values.map(value => value.id).sort((a, b) => a.id - b.id).slice(-1)[0] + 1,
           name: '',
           enabled: true,
           text: '',
