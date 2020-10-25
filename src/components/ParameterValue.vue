@@ -8,10 +8,11 @@
       class="add"
       :disabled="stub"
       @click="$emit('create')"
+      v-tooltip="'Create value'"
     >+
     </button>
     <label class="name">
-      <span>Value:</span>
+      <span class="title">Value:</span>
       <input
         type="text"
         placeholder=""
@@ -21,7 +22,7 @@
       >
     </label>
     <label class="text">
-      <span>Text:</span>
+      <span class="title">Text:</span>
       <input
         type="text"
         :disabled="stub"
@@ -30,12 +31,23 @@
       >
     </label>
     <button
+      @click="openTestTab"
+      v-tooltip="'Test (in new tab)'"
+    >
+      🔍
+    </button>
+    <button
       class="remove"
       :disabled="stub"
       @click="$emit('remove', data.id)"
+      v-tooltip="'Delete value'"
     >
       🞨
     </button>
+    <!--<label class="switch">
+      <input type="checkbox" v-model="localData.enabled">
+      <span class="slider"></span>
+    </label>-->
   </div>
 </template>
 
@@ -52,10 +64,21 @@
         default: false,
       }
     },
+    inject: {
+      domainData: 'domainData',
+      parameterData: 'parameterData',
+    },
     data() {
       return {
         localData: {},
       };
+    },
+    methods: {
+      openTestTab() {
+        chrome.tabs.create({
+          url: `https://${this.domainData.name}/?${this.parameterData.name}=${this.localData.name}`
+        });
+      },
     },
     watch: {
       data: {
@@ -82,18 +105,29 @@
     margin-top: .4rem;
 
     label {
-      span {
+      .title {
         margin: 0 .6rem;
       }
     }
 
     .name {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+
       input {
         width: 9.85rem;
       }
     }
 
+    .switch {
+      margin-left: .6rem;
+    }
+
     .text {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
       margin-right: .5rem;
     }
 
@@ -129,7 +163,6 @@
         border-left: $borderParams;
       }
     }
-
 
     &:not(:last-child) {
       margin-bottom: .3rem;

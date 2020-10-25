@@ -1,6 +1,6 @@
 export const mock = {
   settings: {
-    debug: true,
+    debug: false,
     reset: false,
     options: {
       suppress: true,
@@ -15,7 +15,7 @@ export const mock = {
         id: 1,
         name: 'example.com',
         enabled: true,
-        text: 'Custom example.com title',
+        text: 'New domain title',
         params: [
           {
             id: 1,
@@ -23,13 +23,13 @@ export const mock = {
             enabled: true,
             priority: 1,
             pair: true,
-            text: 'Custom parameter "a" text',
+            text: 'My parameter a title',
             values: [
               {
                 id: 1,
                 name: '1',
                 enabled: true,
-                text: 'Custom a=1 text',
+                text: 'My a=1 text',
               }
             ]
           },

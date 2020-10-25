@@ -2,7 +2,7 @@ chrome.runtime.onInstalled.addListener(
   async () => {
     const defaultData = {
       settings: {
-        debug: true,
+        debug: false,
         reset: false,
         options: {
           suppress: true,
@@ -17,7 +17,7 @@ chrome.runtime.onInstalled.addListener(
             id: 1,
             name: 'example.com',
             enabled: true,
-            text: 'Custom example.com title',
+            text: 'My domain title',
             params: [
               {
                 id: 1,
@@ -25,55 +25,15 @@ chrome.runtime.onInstalled.addListener(
                 enabled: true,
                 priority: 1,
                 pair: true,
-                text: 'Custom parameter "a" text',
+                text: 'My parameter a title',
                 values: [
                   {
                     id: 1,
                     name: '1',
                     enabled: true,
-                    text: 'Custom a=1 text',
+                    text: 'My a=1 text',
                   }
                 ]
-              },
-            ]
-          },
-          {
-            id: 2,
-            name: 'localhost',
-            enabled: true,
-            text: 'hi',
-            params: [
-              {
-                id: 1,
-                name: 'a',
-                enabled: true,
-                priority: 1,
-                pair: true,
-                text: 'Custom parameter "a" text',
-                values: [
-                  {
-                    id: 1,
-                    name: '1',
-                    enabled: true,
-                    text: '=^_^=',
-                  },
-                ],
-              },
-              {
-                id: 2,
-                name: 'b',
-                enabled: true,
-                priority: 2,
-                pair: true,
-                text: 'Custom parameter "a" text',
-                values: [
-                  {
-                    id: 1,
-                    name: '2',
-                    enabled: true,
-                    text: 'xD',
-                  },
-                ],
               },
             ]
           },
@@ -88,5 +48,8 @@ chrome.runtime.onInstalled.addListener(
     if (
       !settings
       || settings.reset
-    ) chrome.storage.sync.set(defaultData);
-  });
+    ) {
+      chrome.storage.sync.set(defaultData);
+    }
+  }
+);

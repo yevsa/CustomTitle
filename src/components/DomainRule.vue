@@ -4,16 +4,36 @@
       <button
         class="open"
         @click="opened = !opened"
+        v-tooltip="`${(opened ? 'Close' : 'Open') + ' settings'}`"
       >
-        {{ openedText }}
+        {{ opened ? '-' : '+' }}
       </button>
-      <p class="title">{{ data.name }}</p>
+      <label class="name">
+        <input
+          class="title"
+          :class="{ invalid: !localData.name.length }"
+          v-model="localData.name"
+        >
+      </label>
+      <label class="switch">
+        <input type="checkbox" v-model="localData.enabled">
+        <span
+          class="slider"
+          v-tooltip="localData.enabled ? 'Disable' : 'Enable'"
+        ></span>
+      </label>
 
       <div class="right">
-        <button @click="$emit('duplicate')">
+        <button
+          @click="$emit('duplicate')"
+          v-tooltip="'Copy'"
+        >
           📋
         </button>
-        <button @click="$emit('remove', data.id)">
+        <button
+          @click="$emit('remove', data.id)"
+          v-tooltip="'Delete'"
+        >
           🞨
         </button>
       </div>
@@ -30,8 +50,8 @@
       <hr>
       <p class="title">Parameters</p>
       <DomainParameter
-        v-for="(param, key) in activeParams"
-        :key="key"
+        v-for="param in sortedParams"
+        :key="param.id"
         :data="param"
         @create="createParam"
         @update="updateParam"
@@ -55,11 +75,21 @@
         default: () => {},
       },
     },
+    provide() {
+      return {
+        domainData: this.localData,
+      };
+    },
     data() {
       return {
         opened: false,
         localData: {},
       };
+    },
+    computed: {
+      sortedParams() {
+        return this.localData.params.map(e => e).sort((a, b) => a.priority - b.priority);
+      },
     },
     methods: {
       openTab() {
@@ -126,16 +156,6 @@
         }
       },
     },
-    computed: {
-      activeParams() {
-        return this.data.params
-          .filter(el => el.enabled)
-          .sort((a, b) => a.priority - b.priority);
-      },
-      openedText() {
-        return this.opened ? '-' : '+';
-      },
-    },
     watch: {
       data: {
         handler(val) {
@@ -155,7 +175,7 @@
 </script>
 
 <style lang="scss" scoped>
-  hr{
+  hr {
     margin: .5rem 0;
   }
 
@@ -179,7 +199,7 @@
         margin-bottom: 1rem;
       }
 
-      > .title {
+      > .name {
         margin: 0 1rem;
         text-overflow: ellipsis;
         overflow: hidden;
@@ -191,6 +211,7 @@
       span.title {
         margin-right: .6rem;
       }
+
       > .title {
         margin-bottom: .5rem;
       }
@@ -207,10 +228,10 @@
   }
 
   button {
-    width: 40px;
-    height: 40px;
+    $size: 40px;
+    width: $size;
+    height: $size;
     font-size: 1.6rem;
-    /*padding-bottom: .5rem;*/
     display: flex;
     justify-content: center;
     align-items: center;

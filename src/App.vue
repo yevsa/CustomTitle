@@ -1,9 +1,6 @@
 <template>
   <div>
-    <div
-      class="debug"
-      v-if="showDebug"
-    >
+    <div class="debug" v-if="showDebug">
       <span class="close" @click="showDebug = false">Close 🞨</span>
       <div class="actions">
         <label>
@@ -18,17 +15,19 @@
     <div class="header">
       <div class="addForm">
         <label>
-          <input v-model="newDomain" type="text" @keyup.enter="addDomain" placeholder="example.com">
+          <input
+            type="text"
+            placeholder="example.com"
+            v-model="newDomain"
+            @keyup.enter="addDomain"
+          >
         </label>
         <button @click="addDomain">+ Add</button>
       </div>
-      <div
-        v-if="isControlsActive"
-        class="controls"
-      >
+      <div class="controls" v-if="isControlsActive">
         <button
-          @click="showSettings = !showSettings"
           class="showSettings"
+          @click="showSettings = !showSettings"
         >
           <p>{{ showSettings ? '-' : '+' }}</p> Options
         </button>
@@ -37,36 +36,42 @@
 
         <div class="save">
           <p
-            class="saveError"
-            v-if="saveError"
-          >Fill all fields</p>
+            class="message"
+            :class="{ error: save.error }"
+            v-if="save.message.length"
+          >
+            {{ save.message }}
+          </p>
           <button @click="saveSettings">Save</button>
         </div>
       </div>
     </div>
-    <div
-      class="options"
-      v-if="showSettings"
-    >
+    <div class="options" v-if="showSettings">
       <ul>
         <li>
-          <label v-if="separatorEnabled">
+          <label class="option" v-if="separatorEnabled">
             <span class="title">Separator</span>
             <input type="text" v-model="settings.separator.value">
           </label>
         </li>
         <li>
-          <label>
+          <label class="option">
             <input type="checkbox" v-model="settings.options.caseSensitive">
-            <span>Case sensitive</span>
+            <span class="description">Case sensitive</span>
+          </label>
+        </li>
+        <li>
+          <label class="option">
+            <input type="checkbox" v-model="settings.options.suppress">
+            <span class="description">Prevent title change (keep custom title)</span>
           </label>
         </li>
       </ul>
     </div>
-    <div class="rules" v-if="activeRules.length">
+    <div class="rules" v-if="ruleset.length">
       <DomainRule
         ref="domains"
-        v-for="(rule, key) in activeRules"
+        v-for="(rule, key) in ruleset"
         :key="key"
         :data="rule"
         @duplicate="duplicateDomain(rule)"
@@ -75,9 +80,7 @@
       />
     </div>
     <div class="rules" v-else>
-      <div class="noRules">
-        List is empty
-      </div>
+      List is empty
     </div>
   </div>
 </template>
@@ -97,18 +100,22 @@
         showDebug: false,
         showPreferences: false,
         showSettings: false,
-        saveError: false,
+        save: {
+          message: '',
+          error: false,
+          clearTimeout: null,
+        },
       }
     },
     computed: {
-      activeRules() {
-        return this.settings.ruleset?.filter(el => el.enabled) ?? [];
+      ruleset() {
+        return this.settings.ruleset ?? [];
       },
       separatorEnabled() {
-        return this.settings?.separator?.enabled;
+        return this.settings.separator?.enabled;
       },
       isControlsActive() {
-        return Object.keys(this.settings).length && this.activeRules.length;
+        return Object.keys(this.settings).length && this.ruleset.length;
       },
     },
     methods: {
@@ -124,11 +131,9 @@
       addDomain() {
         if (!this.newDomain.length) return;
 
-        const ruleset = this.settings.ruleset;
-
-        if (!ruleset.find(el => el.name === this.newDomain)) {
-          ruleset.push({
-            id: this.generateNewId(ruleset),
+        if (!this.ruleset.find(el => el.name === this.newDomain)) {
+          this.ruleset.push({
+            id: this.generateNewId(this.ruleset),
             name: this.newDomain,
             enabled: true,
             text: '',
@@ -156,21 +161,22 @@
         this.newDomain = '';
       },
       duplicateDomain(domain) {
-        this.settings.ruleset.push({
+        this.ruleset.push({
           ...domain,
-          id: this.generateNewId(this.settings.ruleset),
+          id: this.generateNewId(this.ruleset),
         });
       },
       removeDomain(id) {
-        this.settings.ruleset.splice(this.settings.ruleset.findIndex(el => el.id === id), 1);
+        this.ruleset.splice(this.ruleset.findIndex(el => el.id === id), 1);
       },
       updateDomain(domain) {
-        this.settings.ruleset.splice(this.settings.ruleset.findIndex(el => el.id === domain.id), 1, domain);
+        this.ruleset.splice(this.ruleset.findIndex(el => el.id === domain.id), 1, domain);
       },
       saveSettings() {
-        const invalidRuleset = JSON.parse(JSON.stringify(this.settings.ruleset));
-        // console.log('------');
-        // console.log('invalid ruleset', JSON.stringify(invalidRuleset, null, 2));
+        clearTimeout(this.save.clearTimeout);
+        this.save.message = '';
+
+        const invalidRuleset = JSON.parse(JSON.stringify(this.ruleset));
 
         let isRulesetValid = true;
 
@@ -212,9 +218,15 @@
           });
 
         if (!isRulesetValid) {
-          this.saveError = true;
+          this.save.error = true;
+          this.save.message = 'Fill all fields';
           return;
         }
+
+        this.save.clearTimeout = setTimeout(() => {
+          this.save.message = '';
+          this.save.error = false;
+        }, 5 * 1000);
 
         const data = {
           settings: {
@@ -224,17 +236,21 @@
         };
 
         if (!this.mock) {
-          return new Promise(resolve => {
+          new Promise(resolve => {
             chrome?.storage.sync.set(data, () => {
               if (this.settings.debug) {
                 console.log('storage.set', JSON.stringify(data, null, 2));
               }
 
-              resolve()
+              this.save.message = 'Saved';
+              resolve();
             });
           });
         } else {
           console.debug('setStorageData', JSON.stringify(data, null, 2));
+
+          this.save.error = true;
+          this.save.message = 'Mock enabled';
         }
       },
       exportSettings() {
@@ -248,15 +264,9 @@
         const input = document.createElement('input');
         input.type = 'file';
 
-        // input.addEventListener('change', e => console.log('change', e));
-        // input.addEventListener('input', e => console.log('input', e));
-
         input.addEventListener('change', async e => {
-          try {
-            this.settings = JSON.parse(await e.target.files[0].text());
-          } catch (e) {
-            console.error('File import error', e);
-          }
+          const json = await e.target.files[1]?.text();
+          if (json) this.settings = JSON.parse(json);
         });
 
         input.click();
@@ -300,7 +310,6 @@
 
   input {
     &.invalid {
-      //box-shadow: 0 0 5px 2px #ff6b6b;
       border: 2px solid #ffa7a7
     }
   }
@@ -310,6 +319,176 @@
     font-family: Helvetica, sans-serif;
     font-size: 1rem;
     background-color: #f8f8ff;
+  }
+
+  .tooltip {
+    display: block !important;
+    z-index: 10000;
+
+    .tooltip-inner {
+      background: black;
+      color: white;
+      border-radius: 16px;
+      padding: 5px 10px 4px;
+    }
+
+    .tooltip-arrow {
+      width: 0;
+      height: 0;
+      border-style: solid;
+      position: absolute;
+      margin: 5px;
+      border-color: black;
+      z-index: 1;
+    }
+
+    &[x-placement^="top"] {
+      margin-bottom: 5px;
+
+      .tooltip-arrow {
+        border-width: 5px 5px 0 5px;
+        border-left-color: transparent !important;
+        border-right-color: transparent !important;
+        border-bottom-color: transparent !important;
+        bottom: -5px;
+        left: calc(50% - 5px);
+        margin-top: 0;
+        margin-bottom: 0;
+      }
+    }
+
+    &[x-placement^="bottom"] {
+      margin-top: 5px;
+
+      .tooltip-arrow {
+        border-width: 0 5px 5px 5px;
+        border-left-color: transparent !important;
+        border-right-color: transparent !important;
+        border-top-color: transparent !important;
+        top: -5px;
+        left: calc(50% - 5px);
+        margin-top: 0;
+        margin-bottom: 0;
+      }
+    }
+
+    &[x-placement^="right"] {
+      margin-left: 5px;
+
+      .tooltip-arrow {
+        border-width: 5px 5px 5px 0;
+        border-left-color: transparent !important;
+        border-top-color: transparent !important;
+        border-bottom-color: transparent !important;
+        left: -5px;
+        top: calc(50% - 5px);
+        margin-left: 0;
+        margin-right: 0;
+      }
+    }
+
+    &[x-placement^="left"] {
+      margin-right: 5px;
+
+      .tooltip-arrow {
+        border-width: 5px 0 5px 5px;
+        border-top-color: transparent !important;
+        border-right-color: transparent !important;
+        border-bottom-color: transparent !important;
+        right: -5px;
+        top: calc(50% - 5px);
+        margin-left: 0;
+        margin-right: 0;
+      }
+    }
+
+    &.popover {
+      $color: #f9f9f9;
+
+      .popover-inner {
+        background: $color;
+        color: black;
+        padding: 24px;
+        border-radius: 5px;
+        box-shadow: 0 5px 30px rgba(black, .1);
+      }
+
+      .popover-arrow {
+        border-color: $color;
+      }
+    }
+
+    &[aria-hidden='true'] {
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity .15s, visibility .15s;
+    }
+
+    &[aria-hidden='false'] {
+      visibility: visible;
+      opacity: 1;
+      transition: opacity .15s;
+    }
+  }
+
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 23px;
+
+    input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+
+      &:checked + .slider {
+        background-color: #2196F3;
+      }
+
+      &:focus + .slider {
+        box-shadow: 0 0 1px #2196F3;
+      }
+
+      &:checked + .slider:before {
+        $translateLength: 17px;
+        -webkit-transform: translateX($translateLength);
+        -ms-transform: translateX($translateLength);
+        transform: translateX($translateLength);
+      }
+    }
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+
+    &:before {
+      position: absolute;
+      content: "";
+      height: 17px;
+      width: 17px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      -webkit-transition: .4s;
+      transition: .4s;
+    }
+
+    &.round {
+      border-radius: 23px;
+    }
+
+    &.round:before {
+      border-radius: 50%;
+    }
   }
 </style>
 
@@ -326,7 +505,6 @@
       border: 1px solid black;
       border-radius: 3px;
       padding: .7rem;
-      //min-width: 500px;
 
       label {
         > *:not(:last-child) {
@@ -346,17 +524,12 @@
     .controls {
       width: 100%;
       display: flex;
-      //background-color: #fff;
       border: 1px solid transparent;
       border-radius: 3px;
       padding: .7rem;
 
       button:not(:last-child) {
         margin-right: .4rem;
-      }
-
-      .saveError {
-        color: indianred;
       }
 
       .showSettings {
@@ -375,6 +548,14 @@
         display: flex;
         align-items: center;
 
+        .message {
+          color: limegreen;
+
+          &.error {
+            color: indianred;
+          }
+        }
+
         p {
           margin-right: .4rem;
         }
@@ -385,6 +566,10 @@
           background-color: #a7fc45;
           border: 1px solid #90d535;
           outline: 2px solid #6fa72d;
+
+          &:active {
+            background-color: #95eb45;
+          }
         }
       }
 
@@ -401,8 +586,14 @@
     padding: .7rem;
     margin-bottom: 1.3rem;
 
-    span.title {
-      margin-right: .4rem;
+    .option {
+      .title {
+        margin-right: .4rem;
+      }
+
+      .description {
+        margin-left: .4rem;
+      }
     }
 
     li {
@@ -412,6 +603,12 @@
         margin-bottom: .6rem;
       }
     }
+  }
+
+  .rules {
+    display: flex;
+    flex-direction: column;
+    min-width: min-content;
   }
 
   .debug {
