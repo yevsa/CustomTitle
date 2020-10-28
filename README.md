@@ -1,24 +1,38 @@
-# tab-custom-multiname
+# Tab Custom Multiname
 
-## Project setup
-```
-npm install
-```
+Imagine you have three pages on the same **example.com** with the same title but difference content
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+|               | Content Alpha             | Content Beta             | Content Gamma             |
+| ---           | ------------------------  | ------------------------ | ------------------------  |
+| Title         | Dashboard - Website name  | Dashboard - Website name | Dashboard - Website name  |
+| URL           | example.com?content=alpha | example.com?content=beta | example.com?content=gamma |
 
-### Compiles and minifies for production
-```
-npm run build
-```
+Add rule for the domain **example.com** with text **Website** 
 
-### Lints and fixes files
-```
-npm run lint
-```
+Then add three parameters with respective values
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+| content |       |      |       |
+| ---     | ---   | ---  | ---   |
+| Value   | alpha | Text | Alpha |
+| Value   | beta  | Text | Beta  |
+| Value   | gamma | Text | Gamma |
+
+* Click Save button
+* Reload pages
+
+Now you have desired names for website pages!
+
+|               | Content Alpha             | Content Beta             | Content Gamma             |
+| ---           | ------------------------  | ------------------------ | ------------------------  |
+| Title         | Website Alpha             | Website Beta             | Website Gamma             |
+| URL           | example.com?content=alpha | example.com?content=beta | example.com?content=gamma | 
+
+## How to use
+
+1. Install extension from (link will be here when extension passes Chrome Web Store verification)
+2. Open parameters option
+3. Set up your preferences
+4. Click Save button
+5. Open desired page / Reload if already opened
+
+You can press "Test" button to open webpage with chosen parameter=value pair in a new tab 
