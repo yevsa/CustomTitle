@@ -3,6 +3,7 @@ node_modules
 
 todo.docx
 dist/settings
+dist/hot-reload.js
 
 *.pem
 *.crx
