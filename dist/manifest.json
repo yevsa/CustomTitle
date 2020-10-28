@@ -6,8 +6,7 @@
   "background": {
     "scripts": [
       "background.js",
-      "install.js",
-      "hot-reload.js"
+      "install.js"
     ],
     "persistent": false
   },
