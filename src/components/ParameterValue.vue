@@ -83,7 +83,7 @@
     watch: {
       data: {
         handler(val) {
-          this.localData = val;
+          this.localData = JSON.parse(JSON.stringify(val));
         },
         deep: true,
         immediate: true,
