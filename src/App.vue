@@ -89,6 +89,10 @@
   import DomainRule from "@/components/DomainRule";
   import { mock } from '@/utils/mock';
 
+  const STORAGE_KEYS = Object.freeze({
+    settings: 'settings',
+  });
+
   export default {
     name: 'App',
     components: { DomainRule },
@@ -237,7 +241,35 @@
 
         if (!this.mock) {
           new Promise(resolve => {
-            chrome?.storage.sync.set(data, () => {
+            const json = JSON.stringify(data);
+            let chunks = 0;
+            let index = 0;
+            const storageObj = {};
+
+            // handling QUOTA_BYTES_PER_ITEM limitation by splitting json into chunks
+            do {
+              const key = `${STORAGE_KEYS.settings}_${chunks}`;
+              let length = chrome.storage.sync.QUOTA_BYTES_PER_ITEM - key.length;
+
+              if (this.settings.debug) {
+                length = 100 - key.length
+              }
+
+              if (index + length > json.length) {
+                length = json.length - index;
+              }
+
+              storageObj[key] = json.substring(index, index + length);
+
+              chunks++;
+              index += length
+            } while (index < json.length);
+
+            storageObj.chunks = chunks;
+
+            // saving all parts
+            // eslint-disable-next-line
+            chrome?.storage.sync.set(storageObj, () => {
               if (this.settings.debug) {
                 console.log('storage.set', JSON.stringify(data, null, 2));
               }
@@ -282,13 +314,20 @@
           this.showDebug = !this.showDebug;
         }
       });
-
+  
       if (this.mock) {
         this.settings = mock.settings;
       } else {
-        this.settings = await new Promise(resolve => {
+        const rawSettings = await new Promise(resolve => {
           chrome.storage.sync.get('settings', ({ settings }) => resolve(settings));
         });
+  
+        let str = '';
+        for (let i = 0; i < rawSettings.chunks; i++) {
+          str += rawSettings[`${STORAGE_KEYS.settings}_${i}`];
+        }
+  
+        this.settings = JSON.parse(str);
       }
     },
   }
