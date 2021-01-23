@@ -88,6 +88,7 @@
 <script>
   import DomainRule from "@/components/DomainRule";
   import { mock } from '@/utils/mock';
+  import { generateIdFromArray } from "@/utils/utils";
   
   const STORAGE_KEYS = Object.freeze({
     settings: 'settings',
@@ -123,9 +124,6 @@
       },
     },
     methods: {
-      generateNewId(array) {
-        return array.map(el => el.id).sort((a, b) => a.id - b.id).slice(-1)[0] + 1;
-      },
       openAllTabs() {
         this.$refs.domains?.forEach(domain => domain.openTab());
       },
@@ -137,7 +135,7 @@
         
         if (!this.ruleset.find(el => el.name === this.newDomain)) {
           this.ruleset.push({
-            id: this.generateNewId(this.ruleset),
+            id: generateIdFromArray(this.ruleset),
             name: this.newDomain,
             enabled: true,
             text: '',
@@ -167,7 +165,7 @@
       duplicateDomain(domain) {
         this.ruleset.push({
           ...domain,
-          id: this.generateNewId(this.ruleset),
+          id: generateIdFromArray(this.ruleset),
         });
       },
       removeDomain(id) {
@@ -321,13 +319,25 @@
         const rawSettings = await new Promise(resolve => {
           chrome.storage.sync.get('settings', ({ settings }) => resolve(settings));
         });
-        
-        let str = '';
-        for (let i = 0; i < rawSettings.chunks; i++) {
-          str += rawSettings[`${STORAGE_KEYS.settings}_${i}`];
+  
+        if (this.settings.debug) {
+          console.log('rawSettings', rawSettings);
         }
         
-        this.settings = JSON.parse(str);
+        let json = '';
+        for (let i = 0; i < rawSettings.chunks; i++) {
+          json += rawSettings[`${STORAGE_KEYS.settings}_${i}`];
+        }
+        
+        try {
+          this.settings = JSON.parse(json);
+        } catch (e) {
+          this.settings = {};
+          console.log('json', json);
+          if (this.settings.debug) {
+            console.log('json', json);
+          }
+        }
       }
     },
   }

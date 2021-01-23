@@ -65,6 +65,7 @@
 
 <script>
   import DomainParameter from "@/components/DomainParameter";
+  import { generateIdFromArray } from "@/utils/utils";
 
   export default {
     name: "DomainRule",
@@ -111,7 +112,7 @@
         }
 
         params.push({
-          id: params.map(param => param.id).sort((a, b) => a.id - b.id).slice(-1)[0] + 1,
+          id: generateIdFromArray(params),
           name: '',
           enabled: true,
           priority,

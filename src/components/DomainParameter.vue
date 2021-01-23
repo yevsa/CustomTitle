@@ -68,6 +68,7 @@
 
 <script>
   import ParameterValue from "@/components/ParameterValue";
+  import { generateIdFromArray } from "@/utils/utils";
 
   export default {
     name: "DomainParameter",
@@ -98,7 +99,7 @@
       },
       createValue() {
         this.localData.values.push({
-          id: this.localData.values.map(value => value.id).sort((a, b) => a.id - b.id).slice(-1)[0] + 1,
+          id: generateIdFromArray(this.localData.values),
           name: '',
           enabled: true,
           text: '',
