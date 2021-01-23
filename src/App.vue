@@ -269,7 +269,7 @@
             // eslint-disable-next-line
             chrome?.storage.sync.set(storageObj, () => {
               if (this.settings.debug) {
-                console.log('storage.set', JSON.stringify(data, null, 2));
+                console.log('storage.set', JSON.stringify(storageObj, null, 2));
               }
               
               this.save.message = 'Saved';
@@ -302,7 +302,7 @@
         input.click();
       },
       resetSettings() {
-        this.settings = mock.settings;
+        this.settings = mock[0].settings;
         this.saveSettings();
       },
     },
@@ -314,29 +314,34 @@
       });
       
       if (this.mock) {
-        this.settings = mock.settings;
+        this.settings = mock[0].settings;
       } else {
-        const rawSettings = await new Promise(resolve => {
-          chrome.storage.sync.get('settings', ({ settings }) => resolve(settings));
+        const chunksQuantity = await new Promise(resolve => {
+          chrome.storage.sync.get('chunks', ({ chunks }) => resolve(chunks));
         });
   
-        if (this.settings.debug) {
-          console.log('rawSettings', rawSettings);
+        const promises = [];
+        for (let i = 0; i < chunksQuantity; i++) {
+          promises.push(new Promise(resolve => {
+            const key = `${STORAGE_KEYS.settings}_${i}`;
+            chrome.storage.sync.get(key, r => {
+              resolve(r[key]);
+            });
+          }));
         }
         
-        let json = '';
-        for (let i = 0; i < rawSettings.chunks; i++) {
-          json += rawSettings[`${STORAGE_KEYS.settings}_${i}`];
+        const chunks = await Promise.all(promises);
+        const json = chunks.reduce((str, chunk) => str + chunk, '');
+  
+        if (this.settings.debug) {
+          console.log('json', json);
         }
         
         try {
-          this.settings = JSON.parse(json);
+          this.settings = JSON.parse(json).settings;
         } catch (e) {
+          console.error('[Tab Name Customizer] Could not load settings', e);
           this.settings = {};
-          console.log('json', json);
-          if (this.settings.debug) {
-            console.log('json', json);
-          }
         }
       }
     },
