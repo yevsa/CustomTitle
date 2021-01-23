@@ -33,7 +33,7 @@
         </button>
         <button @click="openAllTabs">Open All</button>
         <button @click="closeAllTabs">Close All</button>
-
+        
         <div class="save">
           <p
             class="message"
@@ -88,11 +88,11 @@
 <script>
   import DomainRule from "@/components/DomainRule";
   import { mock } from '@/utils/mock';
-
+  
   const STORAGE_KEYS = Object.freeze({
     settings: 'settings',
   });
-
+  
   export default {
     name: 'App',
     components: { DomainRule },
@@ -134,7 +134,7 @@
       },
       addDomain() {
         if (!this.newDomain.length) return;
-
+        
         if (!this.ruleset.find(el => el.name === this.newDomain)) {
           this.ruleset.push({
             id: this.generateNewId(this.ruleset),
@@ -161,7 +161,7 @@
             ]
           });
         }
-
+        
         this.newDomain = '';
       },
       duplicateDomain(domain) {
@@ -179,11 +179,11 @@
       saveSettings() {
         clearTimeout(this.save.clearTimeout);
         this.save.message = '';
-
+        
         const invalidRuleset = JSON.parse(JSON.stringify(this.ruleset));
-
+        
         let isRulesetValid = true;
-
+        
         const uniqueDomains = [];
         const validRuleset = invalidRuleset
           .filter(domain => {
@@ -191,96 +191,96 @@
               return false;
             }
             uniqueDomains.push(domain.name);
-
+            
             domain.params = domain.params.filter(param => {
               param.values = param.values
                 .filter(value => {
                   const valid = value.name.length
                     && value.text.length;
-
+                  
                   if (!valid) isRulesetValid = false;
-
+                  
                   return valid;
                 });
-
+              
               const valid = param.name.length
                 && (param.pair || param.text.length)
                 && param.values.length;
-
+              
               if (!valid) isRulesetValid = false;
-
+              
               return valid;
             });
-
+            
             const valid = domain.name.length
               && domain.text.length
               && domain.params.length;
-
+            
             if (!valid) isRulesetValid = false;
-
+            
             return valid;
           });
-
+        
         if (!isRulesetValid) {
           this.save.error = true;
           this.save.message = 'Fill all fields';
           return;
         }
-
+        
         this.save.clearTimeout = setTimeout(() => {
           this.save.message = '';
           this.save.error = false;
         }, 5 * 1000);
-
+        
         const data = {
           settings: {
             ...this.settings,
             ruleset: validRuleset,
           },
         };
-
+        
         if (!this.mock) {
           new Promise(resolve => {
             const json = JSON.stringify(data);
             let chunks = 0;
             let index = 0;
             const storageObj = {};
-
+            
             // handling QUOTA_BYTES_PER_ITEM limitation by splitting json into chunks
             do {
               const key = `${STORAGE_KEYS.settings}_${chunks}`;
               let length = chrome.storage.sync.QUOTA_BYTES_PER_ITEM - key.length;
-
+              
               if (this.settings.debug) {
                 length = 100 - key.length
               }
-
+              
               if (index + length > json.length) {
                 length = json.length - index;
               }
-
+              
               storageObj[key] = json.substring(index, index + length);
-
+              
               chunks++;
               index += length
             } while (index < json.length);
-
+            
             storageObj.chunks = chunks;
-
+            
             // saving all parts
             // eslint-disable-next-line
             chrome?.storage.sync.set(storageObj, () => {
               if (this.settings.debug) {
                 console.log('storage.set', JSON.stringify(data, null, 2));
               }
-
+              
               this.save.message = 'Saved';
               resolve();
             });
           });
         } else {
           console.debug('setStorageData', JSON.stringify(data, null, 2));
-
+          
           this.save.error = true;
           this.save.message = 'Mock enabled';
         }
@@ -295,12 +295,12 @@
       async importSettings() {
         const input = document.createElement('input');
         input.type = 'file';
-
+        
         input.addEventListener('change', async e => {
           const json = await e.target.files[0]?.text();
           if (json) this.settings = JSON.parse(json);
         });
-
+        
         input.click();
       },
       resetSettings() {
@@ -314,19 +314,19 @@
           this.showDebug = !this.showDebug;
         }
       });
-  
+      
       if (this.mock) {
         this.settings = mock.settings;
       } else {
         const rawSettings = await new Promise(resolve => {
           chrome.storage.sync.get('settings', ({ settings }) => resolve(settings));
         });
-  
+        
         let str = '';
         for (let i = 0; i < rawSettings.chunks; i++) {
           str += rawSettings[`${STORAGE_KEYS.settings}_${i}`];
         }
-  
+        
         this.settings = JSON.parse(str);
       }
     },
@@ -339,38 +339,38 @@
     padding: 0;
     box-sizing: border-box;
   }
-
+  
   input, button {
     font-family: inherit;
     font-size: inherit;
     padding: .5rem;
     border-radius: 0;
   }
-
+  
   input {
     &.invalid {
       border: 2px solid #ffa7a7
     }
   }
-
+  
   body {
     padding: 3vh 3vw;
     font-family: Helvetica, sans-serif;
     font-size: 1rem;
     background-color: #f8f8ff;
   }
-
+  
   .tooltip {
     display: block !important;
     z-index: 10000;
-
+    
     .tooltip-inner {
       background: black;
       color: white;
       border-radius: 16px;
       padding: 5px 10px 4px;
     }
-
+    
     .tooltip-arrow {
       width: 0;
       height: 0;
@@ -380,10 +380,10 @@
       border-color: black;
       z-index: 1;
     }
-
+    
     &[x-placement^="top"] {
       margin-bottom: 5px;
-
+      
       .tooltip-arrow {
         border-width: 5px 5px 0 5px;
         border-left-color: transparent !important;
@@ -395,10 +395,10 @@
         margin-bottom: 0;
       }
     }
-
+    
     &[x-placement^="bottom"] {
       margin-top: 5px;
-
+      
       .tooltip-arrow {
         border-width: 0 5px 5px 5px;
         border-left-color: transparent !important;
@@ -410,10 +410,10 @@
         margin-bottom: 0;
       }
     }
-
+    
     &[x-placement^="right"] {
       margin-left: 5px;
-
+      
       .tooltip-arrow {
         border-width: 5px 5px 5px 0;
         border-left-color: transparent !important;
@@ -425,10 +425,10 @@
         margin-right: 0;
       }
     }
-
+    
     &[x-placement^="left"] {
       margin-right: 5px;
-
+      
       .tooltip-arrow {
         border-width: 5px 0 5px 5px;
         border-top-color: transparent !important;
@@ -440,10 +440,10 @@
         margin-right: 0;
       }
     }
-
+    
     &.popover {
       $color: #f9f9f9;
-
+      
       .popover-inner {
         background: $color;
         color: black;
@@ -451,44 +451,44 @@
         border-radius: 5px;
         box-shadow: 0 5px 30px rgba(black, .1);
       }
-
+      
       .popover-arrow {
         border-color: $color;
       }
     }
-
+    
     &[aria-hidden='true'] {
       visibility: hidden;
       opacity: 0;
       transition: opacity .15s, visibility .15s;
     }
-
+    
     &[aria-hidden='false'] {
       visibility: visible;
       opacity: 1;
       transition: opacity .15s;
     }
   }
-
+  
   .switch {
     position: relative;
     display: inline-block;
     width: 40px;
     height: 23px;
-
+    
     input {
       opacity: 0;
       width: 0;
       height: 0;
-
+      
       &:checked + .slider {
         background-color: #2196F3;
       }
-
+      
       &:focus + .slider {
         box-shadow: 0 0 1px #2196F3;
       }
-
+      
       &:checked + .slider:before {
         $translateLength: 17px;
         -webkit-transform: translateX($translateLength);
@@ -497,7 +497,7 @@
       }
     }
   }
-
+  
   .slider {
     position: absolute;
     cursor: pointer;
@@ -508,7 +508,7 @@
     background-color: #ccc;
     -webkit-transition: .4s;
     transition: .4s;
-
+    
     &:before {
       position: absolute;
       content: "";
@@ -520,11 +520,11 @@
       -webkit-transition: .4s;
       transition: .4s;
     }
-
+    
     &.round {
       border-radius: 23px;
     }
-
+    
     &.round:before {
       border-radius: 50%;
     }
@@ -535,121 +535,121 @@
   .header {
     display: flex;
     margin-bottom: 1.3rem;
-
+    
     .addForm {
       display: flex;
       flex-wrap: nowrap;
-
+      
       background-color: #fff;
       border: 1px solid black;
       border-radius: 3px;
       padding: .7rem;
-
+      
       label {
         > *:not(:last-child) {
           margin-right: .5rem;
         }
-
+        
         &:not(:last-child) {
           margin-right: .5rem;
         }
       }
-
+      
       button {
         white-space: nowrap;
       }
     }
-
+    
     .controls {
       width: 100%;
       display: flex;
       border: 1px solid transparent;
       border-radius: 3px;
       padding: .7rem;
-
+      
       button:not(:last-child) {
         margin-right: .4rem;
       }
-
+      
       .showSettings {
         display: flex;
         text-align: right;
-
+        
         p {
           width: 10px;
           text-align: center;
           margin-right: .1rem;
         }
       }
-
+      
       .save {
         margin-left: auto;
         display: flex;
         align-items: center;
-
+        
         .message {
           color: limegreen;
-
+          
           &.error {
             color: indianred;
           }
         }
-
+        
         p {
           margin-right: .4rem;
         }
-
+        
         button {
           height: 100%;
           padding: 0 1rem;
           background-color: #a7fc45;
           border: 1px solid #90d535;
           outline: 2px solid #6fa72d;
-
+          
           &:active {
             background-color: #95eb45;
           }
         }
       }
-
+      
       button {
         white-space: nowrap;
       }
     }
   }
-
+  
   .options {
     background-color: #fff;
     border: 1px solid black;
     border-radius: 3px;
     padding: .7rem;
     margin-bottom: 1.3rem;
-
+    
     .option {
       .title {
         margin-right: .4rem;
       }
-
+      
       .description {
         margin-left: .4rem;
       }
     }
-
+    
     li {
       list-style: none;
-
+      
       &:not(:last-child) {
         margin-bottom: .6rem;
       }
     }
   }
-
+  
   .rules {
     display: flex;
     flex-direction: column;
     min-width: min-content;
   }
-
+  
   .debug {
     position: absolute;
     right: 2vw;
@@ -661,19 +661,19 @@
     font-size: 1.4rem;
     display: flex;
     flex-direction: column;
-
+    
     .actions {
       display: flex;
       flex-direction: column;
       align-items: flex-end;
     }
-
+    
     .close {
       align-self: flex-end;
       text-decoration: underline;
       margin-bottom: .4rem;
     }
-
+    
     > input {
       transform: scale(1.2);
       margin-bottom: .5rem;
