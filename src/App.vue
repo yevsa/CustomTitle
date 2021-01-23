@@ -297,7 +297,7 @@
         input.type = 'file';
 
         input.addEventListener('change', async e => {
-          const json = await e.target.files[1]?.text();
+          const json = await e.target.files[0]?.text();
           if (json) this.settings = JSON.parse(json);
         });
 
