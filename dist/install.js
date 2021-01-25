@@ -41,15 +41,29 @@ chrome.runtime.onInstalled.addListener(
       },
     };
     
-    const settings = await new Promise(resolve => {
-      chrome.storage.sync.get('settings', data => resolve(data.settings))
-    });
+    const json = JSON.stringify(defaultData);
+    let chunks = 0;
+    let index = 0;
+    const storageObj = {};
     
-    if (
-      !settings
-      || settings.reset
-    ) {
-      chrome.storage.sync.set(defaultData);
-    }
+    // handling QUOTA_BYTES_PER_ITEM limitation by splitting json into chunks
+    do {
+      const key = `settings_${chunks}`; //todo use constants STORAGE_KEYS
+      let length = chrome.storage.sync.QUOTA_BYTES_PER_ITEM - key.length;
+      
+      if (index + length > json.length) {
+        length = json.length - index;
+      }
+      
+      storageObj[key] = json.substring(index, index + length);
+      
+      chunks++;
+      index += length
+    } while (index < json.length);
+    
+    storageObj.chunks = chunks;
+    
+    // saving all parts
+    chrome?.storage.sync.set(storageObj, () => console.log('Default data installed'));
   }
 );

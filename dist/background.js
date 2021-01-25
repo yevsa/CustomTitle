@@ -1,9 +1,7 @@
 chrome.tabs.onUpdated.addListener(
   async (tabId, changeInfo, tab) => {
     try {
-      const settings = await new Promise(resolve => {
-        chrome.storage.sync.get('settings', data => resolve(data.settings))
-      });
+      const settings = await getSettings();
       
       const findRuleset = hostname => settings.ruleset.find(set => set.name === hostname);
       
@@ -32,9 +30,7 @@ chrome.tabs.onUpdated.addListener(
         changeInfo.status === 'complete'
         && tabRuleset?.enabled
       ) {
-        const settings = await new Promise(resolve => {
-          chrome.storage.sync.get('settings', data => resolve(data.settings))
-        });
+        const settings = await getSettings();
   
         tabRuleset.params.sort((a, b) => a.priority - b.priority);
   
@@ -109,3 +105,24 @@ chrome.tabs.onUpdated.addListener(
     }
   }
 )
+
+async function getSettings() {
+  const chunksQuantity = await new Promise(resolve => {
+    chrome.storage.sync.get('chunks', ({ chunks }) => resolve(chunks));
+  });
+  
+  const promises = [];
+  for (let i = 0; i < chunksQuantity; i++) {
+    promises.push(new Promise(resolve => {
+      const key = `settings_${i}`; //todo use constants STORAGE_KEYS
+      chrome.storage.sync.get(key, r => {
+        resolve(r[key]);
+      });
+    }));
+  }
+  
+  const chunks = await Promise.all(promises);
+  const json = chunks.reduce((str, chunk) => str + chunk, '');
+  
+  return JSON.parse(json).settings;
+}
