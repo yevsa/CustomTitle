@@ -266,7 +266,6 @@
             storageObj.chunks = chunks;
             
             // saving all parts
-            // eslint-disable-next-line
             chrome?.storage.sync.set(storageObj, () => {
               if (this.settings.debug) {
                 console.log('storage.set', JSON.stringify(storageObj, null, 2));
@@ -305,6 +304,23 @@
         this.settings = mock[0].settings;
         this.saveSettings();
       },
+      async migrateOldSettings() {
+        const oldSettings = await new Promise(resolve => {
+          chrome.storage.sync.get('settings', ({ settings }) => resolve(settings));
+        });
+        
+        if (oldSettings !== undefined) {
+          console.debug('oldSettings', oldSettings);
+          this.settings = oldSettings;
+          this.saveSettings();
+          
+          chrome?.storage.sync.remove('settings', () => this.save.message = 'Migration successfull');
+          
+          return true;
+        }
+        
+        return false;
+      },
     },
     async created() {
       document.addEventListener('keydown', e => {
@@ -316,10 +332,14 @@
       if (this.mock) {
         this.settings = mock[0].settings;
       } else {
+        if (await this.migrateOldSettings()) {
+          return;
+        }
+        
         const chunksQuantity = await new Promise(resolve => {
           chrome.storage.sync.get('chunks', ({ chunks }) => resolve(chunks));
         });
-  
+        
         const promises = [];
         for (let i = 0; i < chunksQuantity; i++) {
           promises.push(new Promise(resolve => {
@@ -332,7 +352,7 @@
         
         const chunks = await Promise.all(promises);
         const json = chunks.reduce((str, chunk) => str + chunk, '');
-  
+        
         if (this.settings.debug) {
           console.log('json', json);
         }
