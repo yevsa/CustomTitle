@@ -6,12 +6,12 @@ export const mock = [
       options: {
         suppress: true,
         caseSensitive: true,
+        separator: {
+          enabled: true,
+          value: ' | '
+        }
       },
-      separator: {
-        enabled: true,
-        value: ' | ',
-      },
-      ruleset: [
+      rules: [
         {
           id: 1,
           name: 'example.com',
@@ -30,10 +30,10 @@ export const mock = [
                   id: 1,
                   name: '1',
                   enabled: true,
-                  text: 'My a=1 text',
+                  text: 'My a=1 text'
                 }
               ]
-            },
+            }
           ]
         },
         {
@@ -54,9 +54,9 @@ export const mock = [
                   id: 1,
                   name: '1',
                   enabled: true,
-                  text: '=^_^=',
-                },
-              ],
+                  text: '=^_^='
+                }
+              ]
             },
             {
               id: 2,
@@ -70,13 +70,13 @@ export const mock = [
                   id: 1,
                   name: '2',
                   enabled: true,
-                  text: 'xD',
-                },
-              ],
-            },
+                  text: 'xD'
+                }
+              ]
+            }
           ]
-        },
-      ],
-    },
-  },
+        }
+      ]
+    }
+  }
 ];

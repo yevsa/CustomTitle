@@ -4,98 +4,91 @@
       <div class="top"/>
       <div class="bottom"/>
     </div>
-    <button
-      class="add"
+    <ButtonSimple
+      class="add clean icon-plus"
       :disabled="stub"
       @click="$emit('create')"
       v-tooltip="'Create value'"
-    >+
-    </button>
-    <label class="name">
-      <span class="title">Value:</span>
-      <input
-        type="text"
-        placeholder=""
-        :class="{ invalid: !localData.name.length }"
-        :disabled="stub"
-        v-model="localData.name"
-      >
-    </label>
-    <label class="text">
-      <span class="title">Text:</span>
-      <input
-        type="text"
-        :disabled="stub"
-        :class="{ invalid: !localData.text.length }"
-        v-model="localData.text"
-      >
-    </label>
-    <button
-      @click="openTestTab"
-      v-tooltip="'Test (in new tab)'"
     >
-      🔍
-    </button>
-    <button
-      class="remove"
+      ➕
+    </ButtonSimple>
+    <ButtonSimple
+      class="remove clean icon-normal"
       :disabled="stub"
-      @click="$emit('remove', data.id)"
+      @click="$emit('remove')"
       v-tooltip="'Delete value'"
     >
-      🞨
-    </button>
-    <!--<label class="switch">
-      <input type="checkbox" v-model="localData.enabled">
-      <span class="slider"></span>
-    </label>-->
+      ✖
+    </ButtonSimple>
+    <label class="name label">
+      <span class="title">Value:</span>
+      <InputSimple
+        class="input"
+        type="text"
+        placeholder=""
+        :class="{ invalid: !paramvalue.name.length }"
+        :disabled="stub"
+        v-model="paramvalue.name"
+      />
+    </label>
+    <label class="text label">
+      <span class="title">Text:</span>
+      <InputSimple
+        class="input"
+        type="text"
+        :disabled="stub"
+        :class="{ invalid: !paramvalue.text.length }"
+        v-model="paramvalue.text"
+      />
+    </label>
+    <div class="previewWrapper" @click="openTestTab">
+      <span class="title">Preview:</span>
+      <span
+        class="preview"
+        v-tooltip="'Click to test in new tab'"
+      >{{ preview }}</span>
+    </div>
   </div>
 </template>
 
 <script>
+  import ButtonSimple from '@/components/ButtonSimple';
+  import InputSimple from '@/components/InputSimple';
+  
   export default {
-    name: "ParameterValue",
+    name: 'ParameterValue',
+    components: { InputSimple, ButtonSimple },
     props: {
-      data: {
+      paramvalue: {
         type: Object,
-        default: () => {},
+        default: () => {}
       },
       stub: {
         type: Boolean,
-        default: false,
+        default: false
+      },
+      domainName: {
+        type: String,
+        required: true
+      },
+      parameterName: {
+        type: String,
+        required: true
       }
     },
-    inject: {
-      domainData: 'domainData',
-      parameterData: 'parameterData',
-    },
-    data() {
-      return {
-        localData: {},
-      };
+    computed: {
+      preview() {
+        return `${this.domainName}?${this.parameterName}=${this.paramvalue.name}`;
+      }
     },
     methods: {
       openTestTab() {
         chrome.tabs.create({
-          url: `https://${this.domainData.name}/?${this.parameterData.name}=${this.localData.name}`
+          url: `https://${this.preview}`
         });
-      },
-    },
-    watch: {
-      data: {
-        handler(val) {
-          this.localData = JSON.parse(JSON.stringify(val));
-        },
-        deep: true,
-        immediate: true,
-      },
-      localData: {
-        handler(val) {
-          this.$emit('update', val);
-        },
-        deep: true,
-      },
-    },
-  }
+      }
+    }
+  };
 </script>
 
 <style lang="scss" scoped>
@@ -103,44 +96,51 @@
     display: flex;
     align-items: center;
     margin-top: .4rem;
-
-    label {
+    
+    .label {
+      height: 100%;
+      
+      .input {
+        height: 100%;
+      }
+      
       .title {
         margin: 0 .6rem;
+        color: #746f6f;
       }
     }
-
+    
     .name {
       display: flex;
       flex-wrap: nowrap;
       align-items: center;
-
-      input {
+      
+      .input {
         width: 9.85rem;
       }
     }
-
+    
     .switch {
       margin-left: .6rem;
     }
-
+    
     .text {
       display: flex;
       flex-wrap: nowrap;
       align-items: center;
       margin-right: .5rem;
     }
-
-    button {
+    
+    .button {
       height: 2.34rem;
     }
-
+    
     &:last-child .decorator {
       .bottom {
         border-left: none;
       }
     }
-
+    
     .decorator {
       $borderParams: 2px solid #dadada;
       width: 1.9rem;
@@ -149,23 +149,41 @@
       flex-direction: column;
       align-items: flex-end;
       padding-right: .2rem;
-
+      
       .top {
         height: 50%;
         width: 50%;
         border-bottom: $borderParams;
         border-left: $borderParams;
       }
-
+      
       .bottom {
         height: 50%;
         width: 50%;
         border-left: $borderParams;
       }
     }
-
+    
     &:not(:last-child) {
       margin-bottom: .3rem;
+    }
+    
+    .title {
+      color: #746f6f;
+    }
+    
+    .previewWrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      
+      .preview {
+        margin-left: .2rem;
+        max-width: 40ch;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
     }
   }
 </style>

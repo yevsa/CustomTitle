@@ -3,6 +3,7 @@
   "version": "1.4",
   "description": "Change any tab name using domain and url parameters",
   "manifest_version": 2,
+  "browser_action": {},
   "background": {
     "scripts": [
       "background.js",

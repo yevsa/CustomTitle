@@ -1,96 +1,88 @@
 <template>
   <div class="domain">
     <div class="head">
-      <button
-        class="open"
+      <ButtonSimple
+        class="clean"
         @click="opened = !opened"
         v-tooltip="`${(opened ? 'Close' : 'Open') + ' settings'}`"
       >
-        {{ opened ? '-' : '+' }}
-      </button>
-      <label class="name">
-        <input
-          class="title"
-          :class="{ invalid: !localData.name.length }"
-          v-model="localData.name"
-        >
+        {{ opened ? '➖' : '➕' }}
+      </ButtonSimple>
+      <label class="label">
+        <span class="title">Domain:</span>
+        <InputSimple
+          :class="{ invalid: !domain.name.length }"
+          v-model="domain.name"
+        />
       </label>
-      <label class="switch">
-        <input type="checkbox" v-model="localData.enabled">
-        <span
-          class="slider"
-          v-tooltip="localData.enabled ? 'Disable' : 'Enable'"
-        ></span>
+      <label class="label">
+        <span class="title">New title:</span>
+        <InputSimple
+          v-model="domain.text"
+          :class="{ invalid: !domain.text.length }"
+        />
       </label>
-
+      <SwitchSimple class="switch" v-model="domain.enabled"/>
+      
       <div class="right">
-        <button
+        <ButtonSimple
+          class="clean icon-normal"
           @click="$emit('duplicate')"
           v-tooltip="'Copy'"
         >
           📋
-        </button>
-        <button
-          @click="$emit('remove', data.id)"
+        </ButtonSimple>
+        <ButtonSimple
+          class="clean icon-normal"
+          @click="$emit('remove')"
           v-tooltip="'Delete'"
         >
-          🞨
-        </button>
+          ✖
+        </ButtonSimple>
       </div>
     </div>
     <div class="body" v-if="opened">
-      <label>
-        <span class="title">Domain text:</span>
-        <input
-          type="text"
-          v-model="localData.text"
-          :class="{ invalid: !localData.text.length }"
-        >
-      </label>
       <hr>
       <p class="title">Parameters</p>
       <DomainParameter
-        v-for="param in sortedParams"
+        v-for="(param, index) in sortedParams"
         :key="param.id"
-        :data="param"
+        :parameter="param"
+        :domainName="domain.name"
         @create="createParam"
-        @update="updateParam"
-        @remove="removeParam"
-        @increasePriority="increaseParamPriority"
-        @decreasePriority="decreaseParamPriority"
+        @remove="removeParam(index)"
+        @increasePriority="increaseParamPriority(param)"
+        @decreasePriority="decreaseParamPriority(param)"
       />
     </div>
   </div>
 </template>
 
 <script>
-  import DomainParameter from "@/components/DomainParameter";
-  import { generateIdFromArray } from "@/utils/utils";
-
+  import DomainParameter from '@/components/DomainParameter';
+  import ButtonSimple from '@/components/ButtonSimple';
+  import SwitchSimple from '@/components/SwitchSimple';
+  import InputSimple from '@/components/InputSimple';
+  import { createParameter } from '@/utils/entities';
+  
   export default {
-    name: "DomainRule",
-    components: { DomainParameter },
+    name: 'DomainRule',
+    components: { InputSimple, SwitchSimple, ButtonSimple, DomainParameter },
     props: {
-      data: {
+      domain: {
         type: Object,
-        default: () => {},
-      },
-    },
-    provide() {
-      return {
-        domainData: this.localData,
-      };
+        required: true
+      }
     },
     data() {
       return {
-        opened: false,
-        localData: {},
+        opened: true
       };
     },
     computed: {
       sortedParams() {
-        return this.localData.params.map(e => e).sort((a, b) => a.priority - b.priority);
-      },
+        return this.domain.params.map(e => e).sort((a, b) => a.priority - b.priority);
+      }
     },
     methods: {
       openTab() {
@@ -101,8 +93,8 @@
       },
       createParam() {
         let priority;
-        const params = this.localData.params;
-
+        const params = this.domain.params;
+        
         if (params.length > 1) {
           priority = params.reduce((prev, curr) => {
             return prev.priority > curr.priority ? prev.priority : curr.priority;
@@ -110,76 +102,45 @@
         } else {
           priority = params[0].priority + 1;
         }
-
-        params.push({
-          id: generateIdFromArray(params),
-          name: '',
-          enabled: true,
-          priority,
-          pair: true,
-          text: '',
-          values: [{
-            id: 1,
-            name: '',
-            enabled: true,
-            text: '',
-          }],
-        });
+        
+        params.push(createParameter(priority));
       },
-      updateParam(val) {
-        this.localData.params.splice(this.localData.params.findIndex(el => el.id === val.id), 1, val);
+      removeParam(index) {
+        this.domain.params.splice(index, 1);
       },
-      removeParam(id) {
-        if (this.localData.params.length > 1) {
-          this.localData.params.splice(this.localData.params.findIndex(el => el.id === id), 1);
-        }
-      },
-      increaseParamPriority(id) {
-        const param = this.localData.params.find(el => el.id === id);
-        const nextPriorityParam = this.localData.params.find(el => {
+      increaseParamPriority(param) {
+        const nextPriorityParam = this.domain.params.find(el => {
           return el.priority === param.priority - 1;
         });
-
+        
         if (nextPriorityParam) {
           param.priority--;
           nextPriorityParam.priority++;
         }
       },
-      decreaseParamPriority(id) {
-        const param = this.localData.params.find(el => el.id === id);
-        const prevPriorityParam = this.localData.params.find(el => {
+      decreaseParamPriority(param) {
+        const prevPriorityParam = this.domain.params.find(el => {
           return el.priority === param.priority + 1;
         });
-
+        
         if (prevPriorityParam) {
           param.priority++;
           prevPriorityParam.priority--;
         }
-      },
-    },
-    watch: {
-      data: {
-        handler(val) {
-          this.localData = val;
-        },
-        deep: true,
-        immediate: true,
-      },
-      localData: {
-        handler(val) {
-          this.$emit('update', val);
-        },
-        deep: true,
-      },
-    },
-  }
+      }
+    }
+  };
 </script>
 
 <style lang="scss" scoped>
   hr {
     margin: .5rem 0;
   }
-
+  
+  .switch {
+    margin: 0 .3rem;
+  }
+  
   .domain {
     min-width: 500px;
     width: 100%;
@@ -187,19 +148,29 @@
     border: 1px solid black;
     border-radius: 3px;
     padding: .7rem;
-
+    
     &:not(:last-child) {
       margin-bottom: .5rem;
     }
-
+    
+    .label {
+      height: 100%;
+      
+      .input {
+        height: 100%;
+        padding-left: .5rem;
+      }
+    }
+    
     .head {
       display: flex;
       align-items: center;
-
+      height: 40px;
+      
       &:not(:last-child) {
         margin-bottom: 1rem;
       }
-
+      
       > .name {
         margin: 0 1rem;
         text-overflow: ellipsis;
@@ -207,34 +178,16 @@
         white-space: nowrap;
       }
     }
-
-    .body {
-      span.title {
-        margin-right: .6rem;
-      }
-
-      > .title {
-        margin-bottom: .5rem;
-      }
+    
+    .title {
+      margin: 0 .3rem .5rem;
+      
+      color: #746f6f;
     }
   }
-
+  
   .right {
     display: flex;
     margin-left: auto;
-
-    button:not(:last-child) {
-      margin-right: .4rem;
-    }
-  }
-
-  button {
-    $size: 40px;
-    width: $size;
-    height: $size;
-    font-size: 1.6rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
   }
 </style>

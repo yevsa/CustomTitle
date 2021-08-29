@@ -1,65 +1,60 @@
 <template>
   <div class="parameter">
     <div class="head">
-      <button
-        class="addParameter"
+      <ButtonSimple
+        class="addParameter clean icon-plus "
         :disabled="stub"
         @click="$emit('create')"
         v-tooltip="'Create parameter'"
       >
-        +
-      </button>
-      <label>
+        ➕
+      </ButtonSimple>
+      <label class="label">
         <span class="title">Name:</span>
-        <input
-          type="text"
-          placeholder=""
+        <InputSimple
           :disabled="stub"
-          :class="{ invalid: !localData.name.length }"
-          v-model="localData.name"
-        >
-      </label>
-      <label class="switch">
-        <input type="checkbox" v-model="localData.enabled">
-        <span
-          class="slider"
-          v-tooltip="localData.enabled ? 'Disable' : 'Enable'"
-        ></span>
+          :class="{ invalid: !parameter.name.length }"
+          v-model="parameter.name"
+        />
       </label>
       <div class="controls">
-        <button
-          class="sort"
+        <ButtonSimple
+          class="sort clean icon-normal"
           :disabled="stub"
-          @click="$emit('increasePriority', data.id)"
+          @click="$emit('increasePriority')"
           v-tooltip="'Increase priority'"
-        >🡑
-        </button>
-        <button
-          class="sort"
+        >
+          🡑
+        </ButtonSimple>
+        <ButtonSimple
+          class="sort clean icon-normal"
           :disabled="stub"
-          @click="$emit('decreasePriority', data.id)"
+          @click="$emit('decreasePriority')"
           v-tooltip="'Decrease priority'"
-        >🡓
-        </button>
-        <button
-          class="remove"
+        >
+          🡓
+        </ButtonSimple>
+        <ButtonSimple
+          class="remove clean icon-normal"
           :disabled="stub"
-          @click="$emit('remove', data.id)"
+          @click="$emit('remove')"
           v-tooltip="'Delete'"
-        >🞨
-        </button>
+        >
+          ✖
+        </ButtonSimple>
       </div>
     </div>
     <div class="body">
       <div class="parts">
         <ParameterValue
-          v-for="value in localData.values"
+          v-for="(value, index) in parameter.values"
           :key="value.id"
-          :data="value"
+          :paramvalue="value"
+          :parameterName="parameter.name"
+          :domainName="domainName"
           :stub="stub"
-          @update="updateValue"
           @create="createValue"
-          @remove="removeValue"
+          @remove="removeValue(index)"
         />
       </div>
     </div>
@@ -67,106 +62,79 @@
 </template>
 
 <script>
-  import ParameterValue from "@/components/ParameterValue";
-  import { generateIdFromArray } from "@/utils/utils";
-
+  import ParameterValue from '@/components/ParameterValue';
+  import ButtonSimple from '@/components/ButtonSimple';
+  import InputSimple from '@/components/InputSimple';
+  import { createValue } from '@/utils/entities';
+  
   export default {
-    name: "DomainParameter",
-    components: { ParameterValue },
+    name: 'DomainParameter',
+    components: { InputSimple, ButtonSimple, ParameterValue },
     props: {
-      data: {
+      parameter: {
         type: Object,
-        default: () => {},
+        required: true,
+        default: () => {}
       },
       stub: {
         type: Boolean,
-        default: false,
+        default: false
+      },
+      domainName: {
+        type: String,
+        required: true
       }
     },
-    provide() {
-      return {
-        parameterData: this.localData,
-      };
-    },
-    data() {
-      return {
-        localData: {},
-      };
-    },
     methods: {
-      updateValue(val) {
-        Object.assign(this.localData.values.find(el => el.id === val.id), val);
-      },
       createValue() {
-        this.localData.values.push({
-          id: generateIdFromArray(this.localData.values),
-          name: '',
-          enabled: true,
-          text: '',
-        });
+        this.parameter.values.push(createValue());
       },
-      removeValue(id) {
-        if (this.localData.values.length > 1) {
-          this.localData.values.splice(this.localData.values.findIndex(el => el.id === id), 1);
+      removeValue(index) {
+        if (this.parameter.values.length > 1) {
+          this.parameter.values.splice(index, 1);
         }
-      },
-    },
-    watch: {
-      data: {
-        handler(val) {
-          this.localData = JSON.parse(JSON.stringify(val));
-        },
-        deep: true,
-        immediate: true,
-      },
-      localData: {
-        handler(val) {
-          this.$emit('update', val);
-        },
-        deep: true,
-      },
-    },
-  }
+      }
+    }
+  };
 </script>
 
 <style lang="scss" scoped>
   .parameter {
     display: flex;
     flex-wrap: wrap;
-
+    
     .head {
       display: flex;
       align-items: center;
       width: 100%;
-
-      label {
+      
+      .label {
+        height: 100%;
+        
+        .input {
+          height: 100%;
+        }
+        
         .title {
           margin: 0 .6rem;
+          color: #746f6f;
         }
       }
-
+      
       .switch {
         margin-left: .6rem;
       }
-
+      
       .controls {
         margin-left: auto;
-
-        button {
-          width: 34px;
-
-          &:not(:last-child) {
-            margin-right: .2rem;
-          }
-        }
       }
     }
-
+    
     .body {
       display: flex;
       align-items: center;
     }
-
+    
     &:not(:last-child) {
       margin-bottom: .5rem;
     }

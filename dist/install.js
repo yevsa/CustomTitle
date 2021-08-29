@@ -7,12 +7,12 @@ chrome.runtime.onInstalled.addListener(
         options: {
           suppress: true,
           caseSensitive: true,
+          separator: {
+            enabled: true,
+            value: ' | '
+          }
         },
-        separator: {
-          enabled: true,
-          value: ' | ',
-        },
-        ruleset: [
+        rules: [
           {
             id: 1,
             name: 'example.com',
@@ -31,14 +31,14 @@ chrome.runtime.onInstalled.addListener(
                     id: 1,
                     name: '1',
                     enabled: true,
-                    text: 'My a=1 text',
+                    text: 'My a=1 text'
                   }
                 ]
-              },
+              }
             ]
-          },
-        ],
-      },
+          }
+        ]
+      }
     };
     
     const json = JSON.stringify(defaultData);
@@ -58,12 +58,12 @@ chrome.runtime.onInstalled.addListener(
       storageObj[key] = json.substring(index, index + length);
       
       chunks++;
-      index += length
+      index += length;
     } while (index < json.length);
     
     storageObj.chunks = chunks;
     
     // saving all parts
-    chrome?.storage.sync.set(storageObj, () => console.log('Default data installed'));
+    chrome.storage.sync.set(storageObj, () => console.log('Default data installed'));
   }
 );
