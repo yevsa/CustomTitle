@@ -35,4 +35,4 @@ Now you have desired names for website pages!
 4. Click Save button
 5. Open desired page / Reload if already opened
 
-You can press "Test" button to open webpage with chosen parameter=value pair in a new tab 
+You can click on preview to open webpage with chosen parameter=value pair in a new tab 
