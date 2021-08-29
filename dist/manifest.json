@@ -1,6 +1,6 @@
 {
   "name": "Tab Name Customiser",
-  "version": "1.4",
+  "version": "1.5",
   "description": "Change any tab name using domain and url parameters",
   "manifest_version": 2,
   "browser_action": {},
