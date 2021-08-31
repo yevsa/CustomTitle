@@ -32,8 +32,9 @@
   import OptionsMenu from '@/components/OptionsMenu';
   import ControlsMenu from '@/components/ControlsMenu';
   import DebugMenu from '@/components/DebugMenu';
-  import { loadData, saveData } from '@/api';
+  import { loadData } from '@/api';
   import { createDomain } from '@/utils/entities';
+  import { saveData } from '../public/saveData';
   
   export default {
     name: 'App',

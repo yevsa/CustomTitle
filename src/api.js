@@ -34,37 +34,3 @@ export const loadData = async () => {
     return {};
   }
 };
-
-export const saveData = data => {
-  return new Promise(resolve => {
-    const json = JSON.stringify(data);
-    let chunks = 0;
-    let index = 0;
-    const storageObj = {};
-    
-    // handling QUOTA_BYTES_PER_ITEM limitation by splitting json into chunks
-    do {
-      const key = `${STORAGE_KEYS.settings}_${chunks}`;
-      const QUOTA_BYTES_PER_ITEM = isChromeEnv ? chrome.storage.sync.QUOTA_BYTES_PER_ITEM : 100;
-      let length = QUOTA_BYTES_PER_ITEM - key.length;
-      
-      if (index + length > json.length) {
-        length = json.length - index;
-      }
-      
-      storageObj[key] = json.substring(index, index + length);
-      
-      chunks++;
-      index += length;
-    } while (index < json.length);
-    
-    storageObj.chunks = chunks;
-    
-    // saving all parts
-    if (isChromeEnv) {
-      chrome.storage.sync.set(storageObj, resolve);
-    } else {
-      resolve();
-    }
-  });
-};

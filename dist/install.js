@@ -1,3 +1,5 @@
+import { saveData } from './settings/saveData.js';
+
 export async function installer() {
   const defaultData = {
     settings: {
@@ -40,28 +42,10 @@ export async function installer() {
     }
   };
   
-  const json = JSON.stringify(defaultData);
-  let chunks = 0;
-  let index = 0;
-  const storageObj = {};
-  
-  // handling QUOTA_BYTES_PER_ITEM limitation by splitting json into chunks
-  do {
-    const key = `settings_${chunks}`;
-    let length = chrome.storage.sync.QUOTA_BYTES_PER_ITEM - key.length;
-    
-    if (index + length > json.length) {
-      length = json.length - index;
-    }
-    
-    storageObj[key] = json.substring(index, index + length);
-    
-    chunks++;
-    index += length;
-  } while (index < json.length);
-  
-  storageObj.chunks = chunks;
-  
-  // saving all parts
-  chrome.storage.sync.set(storageObj, () => console.log('Default data installed'));
+  try {
+    await saveData(defaultData);
+    console.log('Default data installed');
+  } catch (e) {
+    console.error('Error occured during saving data', e);
+  }
 }
