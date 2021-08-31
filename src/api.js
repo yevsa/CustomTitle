@@ -1,4 +1,5 @@
 import { mock } from '@/utils/mock';
+import { migrateSettings } from '../public/migration';
 
 const STORAGE_KEYS = Object.freeze({
   settings: 'settings'
@@ -27,7 +28,7 @@ export const loadData = async () => {
   const json = chunks.reduce((str, chunk) => str + chunk, '');
   
   try {
-    return JSON.parse(json).settings;
+    return migrateSettings(JSON.parse(json).settings);
   } catch (e) {
     console.error('[Tab Name Customizer] Could not load settings', e);
     return {};

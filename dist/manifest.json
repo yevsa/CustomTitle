@@ -2,18 +2,18 @@
   "name": "Tab Name Customiser",
   "version": "1.5",
   "description": "Change any tab name using domain and url parameters",
-  "manifest_version": 2,
-  "browser_action": {},
+  "manifest_version": 3,
+  "action": {},
   "background": {
-    "scripts": [
-      "background.js",
-      "install.js"
-    ],
-    "persistent": false
+    "service_worker": "worker.js",
+    "type": "module"
   },
   "permissions": [
     "storage",
     "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
     "http://*/",
     "https://*/"
   ],
