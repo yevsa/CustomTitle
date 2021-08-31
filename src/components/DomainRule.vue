@@ -76,7 +76,7 @@
     },
     data() {
       return {
-        opened: true
+        opened: false
       };
     },
     computed: {
