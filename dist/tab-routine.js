@@ -3,75 +3,50 @@ import { getSettings } from './utils/getSettings.js';
 export async function tabRoutine(tabId, changeInfo, tab) {
   try {
     const settings = await getSettings();
+    const url = new URL('url' in changeInfo ? changeInfo.url : tab.url);
+    const hostname = url.hostname;
+    const rule = settings.rules.find(set => {
+      const noW = hostname.replace(/^www./, '');
+      return set.name === hostname
+        || set.name === noW
+        || set.name.includes(noW)
+    });
     
-    const findRules = hostname => settings.rules.find(set => set.name === hostname);
-    
-    const url = new URL(tab.url);
-    let hostname = url.hostname;
-    let tabRules = findRules(hostname);
-    
-    if (!tabRules) {
-      hostname = hostname.replace(/^www./, '');
-      tabRules = findRules(hostname);
-    }
-    
-    if (!tabRules) {
-      tabRules = settings.rules.find(set => set.name.includes(hostname));
-    }
-    
-    if (settings.debug) {
-      console.warn(`
-        ----- ${hostname} -----
-        `);
-      console.debug('tab', tab);
-      console.debug('tabRules', tabRules);
-    }
-    
-    if (
-      changeInfo.status === 'complete'
-      && tabRules?.enabled
-    ) {
-      const settings = await getSettings();
+    if (!rule) {
+      console.log(`No rule for ${url.hostname}`);
+      return;
+    } else {
+      console.log(`Rule found for ${url.hostname}!`);
       
-      tabRules.params.sort((a, b) => a.priority - b.priority);
+      if (settings.debug) {
+        console.debug(`----- ${url.hostname} -----`);
+        console.debug('tab', tab);
+        console.debug('rule', rule);
+      }
+    }
+    
+    if (rule.enabled) {
+      rule.params.sort((a, b) => a.priority - b.priority);
+      const considerCase = str => settings.options.caseSensitive ? str : str.toLowerCase();
       
       const separator = settings.options.separator.enabled && settings.options.separator.value || '';
-      
-      const urlParams = Object.fromEntries(
-        url.search
-          .slice(1)
-          .split('&')
-          .map(pair => {
-            pair = pair.split('=');
-            
-            if (!settings.options.caseSensitive) {
-              pair = pair.map(el => el.toLowerCase());
-            }
-            
-            return pair;
-          })
-      );
+      let searchParams = [...url.searchParams];
+      if (!settings.options.caseSensitive) {
+        searchParams = searchParams.map(el => [el[0], el[1].toLowerCase()]);
+      }
+      const urlParams = Object.fromEntries(searchParams);
       
       if (settings.debug) {
         console.debug('urlParams', urlParams);
       }
       
-      let title = tabRules.params
+      const title = rule.params
         .reduce((chunks, param) => {
-          let paramName = param.name;
-          if (!settings.options.caseSensitive) {
-            paramName = paramName.toLowerCase();
-          }
+          const paramName = considerCase(param.name);
           
           if (param.enabled && paramName in urlParams) {
             const value = param.values.find(value => {
-              let valueName = value.name;
-              
-              if (!settings.options.caseSensitive) {
-                valueName = valueName.toLowerCase();
-              }
-              
-              return valueName === urlParams[paramName];
+              return considerCase(value.name) === urlParams[paramName];
             });
             
             if (value) {
@@ -80,7 +55,7 @@ export async function tabRoutine(tabId, changeInfo, tab) {
           }
           
           return chunks;
-        }, [tabRules.text])
+        }, [rule.text])
         .join(separator)
         .replace(/'/g, '\'');
       
@@ -98,10 +73,17 @@ export async function tabRoutine(tabId, changeInfo, tab) {
             if (shouldSuppress) {
               try {
                 if ('_tnc_titleUpdater' in window) {
-                  console.error('[Tab Name Customizer] Cannot suppress title change. Something is using extension\'s reserved variable');
-                } else {
-                  clearInterval(_tnc_titleUpdater);
-                  var _tnc_titleUpdater = setInterval(() => document.title = title, 1000);
+                  clearInterval(window._tnc_titleUpdater);
+                }
+  
+                try {
+                  window._tnc_titleUpdater = setInterval(() => {
+                    if (document.title !== title) {
+                      document.title = title;
+                    }
+                  }, 1000);
+                } catch (e) {
+                  console.warn('[Tab Name Customizer] Title blocker setup failed', e);
                 }
               } catch (e) {
                 console.error('[Tab Name Customizer]', e);
@@ -110,6 +92,10 @@ export async function tabRoutine(tabId, changeInfo, tab) {
           }
         }
       );
+      
+      if (settings.options.suppress) {
+        console.log('Set up title blocker', title);
+      }
     }
   } catch (e) {
     console.error(e);
