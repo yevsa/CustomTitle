@@ -14,8 +14,8 @@
     "scripting"
   ],
   "host_permissions": [
-    "http://*/",
-    "https://*/"
+    "http://*/*",
+    "https://*/*"
   ],
   "options_page": "settings/index.html"
 }
