@@ -83,10 +83,10 @@ export async function tabRoutine(tabId, changeInfo, tab) {
                     }
                   }, 1000);
                 } catch (e) {
-                  console.warn('[Tab Name Customizer] Title blocker setup failed', e);
+                  console.warn('[CustomTitle] Title blocker setup failed', e);
                 }
               } catch (e) {
-                console.error('[Tab Name Customizer]', e);
+                console.error('[CustomTitle]', e);
               }
             }
           }

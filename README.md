@@ -1,4 +1,4 @@
-# Tab Custom Multiname
+# CustomTitle
 
 Imagine you have three pages on the same **example.com** with the same title but difference content
 

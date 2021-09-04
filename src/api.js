@@ -30,7 +30,7 @@ export const loadData = async () => {
   try {
     return migrateSettings(JSON.parse(json).settings);
   } catch (e) {
-    console.error('[Tab Name Customizer] Could not load settings', e);
+    console.error('[CustomTitle] Could not load settings', e);
     return {};
   }
 };
