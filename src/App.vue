@@ -20,7 +20,7 @@
     </div>
     <OptionsMenu
       v-if="show.options"
-      :settings="settings"
+      :options="settings.options"
     />
     <RulesList :rules="settings.rules"/>
   </div>

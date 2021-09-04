@@ -2,23 +2,23 @@
   <div class="options">
     <ul>
       <li class="item">
-        <label class="option" v-if="separatorEnabled">
+        <label class="option" v-if="options.separator.enabled">
           <span class="title">Separator</span>
           <input
             type="text"
-            v-model="settings.separator.value"
+            v-model="options.separator.value"
           >
         </label>
       </li>
       <li class="item">
         <label class="option">
-          <input type="checkbox" v-model="settings.options.caseSensitive">
+          <input type="checkbox" v-model="options.caseSensitive">
           <span class="description">Case sensitive</span>
         </label>
       </li>
       <li class="item">
         <label class="option">
-          <input type="checkbox" v-model="settings.options.suppress">
+          <input type="checkbox" v-model="options.suppress">
           <span class="description">Prevent title change (keep custom title)</span>
         </label>
       </li>
@@ -30,14 +30,9 @@
   export default {
     name: 'OptionsMenu',
     props: {
-      settings: {
+      options: {
         type: Object,
         required: true
-      }
-    },
-    computed: {
-      separatorEnabled() {
-        return this.settings.separator?.enabled;
       }
     }
   };
